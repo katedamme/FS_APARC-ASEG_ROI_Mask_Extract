@@ -1,7 +1,8 @@
+# Extracts all ROI Volumes from FS aparc+aseg and renames them and makes a volume and label as a byproduct in the labels FS folder
+# Intended for structural data
 # By Nadig and Damme, 2016
 # Loop layer 1: Go through list of subjects
-# Loop layer 2: go through each type of image, anat, anatorg, diff
-# Loop layer 3: go through each region defined in the look up table, create a mask, apply it to the the asegtodiff file
+# Loop layer 2: go through each region defined in the look up table, create a mask, apply it to the the asegtodiff file
 
 
 #!# /bin/tcsh
