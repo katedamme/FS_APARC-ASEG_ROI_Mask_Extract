@@ -1,0 +1,23 @@
+echo "subj,seed_trgt_hemi_percent,MFA" >>! percentile_tracts.csv
+foreach subj (`cat subj.txt`)
+	foreach seed (NAcc )
+		foreach trgt (Amygdala mOFC_ctx)
+			foreach percent (97)
+				foreach hemi (R L)
+				echo "Calculating the ${percent}th percentile for ${subj} ${hemi} hemishpere between ${seed} and ${trgt}"
+				fslstats $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/fdt_paths.nii.gz -P ${percent}
+				echo "Making the mask for the ${percent}th percentile for ${subj} ${hemi} hemishpere between ${seed} and ${trgt}"
+				fslmaths $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/fdt_paths.nii.gz -thr `fslstats $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/fdt_paths.nii.gz -P ${percent}` $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/${subj}_${hemi}_${seed}_${trgt}_${percent}_fdt_paths.nii.gz
+				fslmaths $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/${subj}_${hemi}_${seed}_${trgt}_${percent}_fdt_paths.nii.gz -bin $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/${subj}_${hemi}_${seed}_${trgt}_${percent}_binary_paths.nii.gz
+				fslmaths $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/fdt_paths.nii.gz -thr `fslstats $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/fdt_paths.nii.gz -P ${percent}` -bin $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/${subj}_${hemi}_${seed}_${trgt}_${percent}_binary_paths.nii.gz
+				echo "Calculating the mean FA for ${percent}th percentile for ${subj} ${hemi} hemishpere between ${seed} and ${trgt}"
+				fslstats $SUBJECTS_DIR/${subj}/dti/*_FA.nii -k $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2${trgt}.waypt.euler/${subj}_${hemi}_${seed}_${trgt}_${percent}_binary_paths.nii.gz -M
+				end
+			fslmaths $SUBJECTS_DIR/${subj}/dpath/R.${seed}2${trgt}.waypt.euler/${subj}_R_${seed}_${trgt}_${percent}_binary_paths.nii.gz -add $SUBJECTS_DIR/${subj}/dpath/L.${seed}2${trgt}.waypt.euler/${subj}_L_${seed}_${trgt}_${percent}_binary_paths.nii.gz $SUBJECTS_DIR/${subj}/dpath/${subj}_${seed}_${trgt}_${percent}_bilateral_binary_paths.nii.gz
+			echo "${subj},${seed}_${hemi}_${trgt}_${percent},`fslstats $SUBJECTS_DIR/${subj}/dti/*_FA.nii* -k $SUBJECTS_DIR/${subj}/dpath/${subj}_${seed}_${trgt}_${percent}_bilateral_binary_paths.nii.gz -M`" >>! percentile_tracts.csv
+			
+			end
+		end
+	end
+end
+

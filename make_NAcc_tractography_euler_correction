@@ -1,0 +1,38 @@
+#!/usr/bin/tcsh
+# KSF Damme 2013 -- Master's Script - reference https://academic.oup.com/scan/article/12/6/928/3002823
+# Assumes that you've run tracula, fdt preprocessing and extracted volumes in diffusion space (https://github.com/katedamme/FS_APARC-ASEG_ROI_Mask_Extract)
+# 
+foreach subj (`cat subj.txt`)
+foreach side (Right Left)
+echo "Starting ${subj} tractography between ${seed} and Amygdala in the ${side} hemisphere..."
+echo "......................................................................................"
+rm -rf $SUBJECTS_DIR/${subj}/dpath/${side}.${seed}2Amygdala.waypt.euler
+mkdir -p $SUBJECTS_DIR/${subj}/dpath/${side}.${seed}2Amygdala.waypt.euler
+
+/usr/local/fsl/bin/probtrackx2  -x $SUBJECTS_DIR/${subj}/dlabel/diff/${subj}_??_${side}-Accumbens-area.label.nii.gz -l -f --modeuler --onewaycondition -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s $SUBJECTS_DIR/${subj}/dmri.bedpostX/merged -m $SUBJECTS_DIR/${subj}/dmri.bedpostX/nodif_brain_mask  --dir=$SUBJECTS_DIR/${subj}/dpath/${side}.${seed}2Amygdala.waypt.euler --waypoints=$SUBJECTS_DIR/${subj}/dlabel/diff/${subj}_??_${side}-Amygdala.label.nii.gz --waycond=AND
+echo
+echo
+echo
+if ( -e $SUBJECTS_DIR/${subj}/dpath/${side}.${seed}2Amygdala.waypt.euler/fdt_paths.nii.gz) then
+echo "${subj} ${side} ${seed} Amygdala file exists"
+else
+echo "waiting for ${subj} ${side} ${seed} Amygdala........."
+endif
+foreach hemi (rh lh)
+echo "Starting ${subj} tractography between ${seed} and mOFC in the ${hemi} hemisphere..."
+echo "......................................................................................"
+rm -rf $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2mOFC.waypt.euler
+mkdir -p $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2mOFC.waypt.euler
+/usr/local/fsl/bin/probtrackx2  -x $SUBJECTS_DIR/${subj}/dlabel/diff/${subj}_??_${side}-Accumbens-area.label.nii.gz  -l --modeuler --onewaycondition -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s $SUBJECTS_DIR/${subj}/dmri.bedpostX/merged -m $SUBJECTS_DIR/${subj}/dmri.bedpostX/nodif_brain_mask  --dir=$SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2mOFC.waypt.euler --waypoints=$SUBJECTS_DIR/${subj}/dlabel/diff/${subj}_*_ctx-${hemi}-medialorbitofrontal.label.nii.gz  --waycond=AND
+echo
+echo
+echo
+if ( -e $SUBJECTS_DIR/${subj}/dpath/${hemi}.${seed}2mOFC.waypt.euler/fdt_paths.nii.gz) then
+echo "${subj} ${hemi} ${seed} medialorbitofrontal file exists"
+else
+echo "waiting for ${subj} ${hemi} ${seed} mOFC........."
+endif
+end
+end
+end
+end
